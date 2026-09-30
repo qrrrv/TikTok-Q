@@ -35,7 +35,7 @@ public final class Updater {
     private Updater() {}
 
     private static final String SOURCE =
-            "https://raw.githubusercontent.com/narezany/MargyT/main/version.json";
+            "https://git.narez.xyz/narezany/MargyT/raw/branch/main/version.json";
 
     public static final String KEY_REMIND = "update_remind";
 

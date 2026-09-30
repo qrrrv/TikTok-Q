@@ -1,8 +1,8 @@
 {
-  "_comment": "What the app checks to know whether it is out of date. It reads this from the repository at startup and every five minutes; the badges themselves come from the server.",
-  "version": "0.23.2",
-  "url": "https://github.com/narezany/MargyT/releases/download/v0.23.2/margyt.apk",
-  "notes": "Patches: small signed fixes that arrive on their own, without reinstalling 385 MB. HDR is actually flattened now, on the surface the video is on. The banner lightens under a light theme instead of going black on black, and the mod stops guessing the theme wrong when TikTok's own switch disagrees with the phone's.",
-  "notes_ru": "Заплатки: маленькие подписанные починки приезжают сами, без переустановки 385 мегабайт. HDR наконец действительно выключается, на той самой поверхности, где идёт видео. Баннер на светлой теме светлеет, а не чернеет по чёрному, и мод перестал ошибаться с темой, когда переключатель тиктока спорит с системным.",
-  "notes_uk": "Латки: маленькі підписані полагодження приїжджають самі, без перевстановлення 385 мегабайт. HDR нарешті справді вимикається, на тій самій поверхні, де йде відео. Банер на світлій темі світлішає, а не чорніє по чорному, і мод перестав помилятися з темою, коли перемикач тіктоку сперечається із системним."
+  "_comment": "What the app checks to know whether it is out of date. It reads this from the project's own git server at startup and every five minutes; the badges come from the same box.",
+  "version": "1.24",
+  "url": "https://git.narez.xyz/narezany/MargyT/releases/download/v1.24/margyt.apk",
+  "notes": "Off GitHub and off a bare IP address. The mod now talks to margy.narez.xyz over https and takes its updates from git.narez.xyz. The licence is GPL-3.0 with a term that keeps the author's notices where people can see them.",
+  "notes_ru": "Уход с гитхаба и с голого айпи. Мод ходит на margy.narez.xyz по https, обновления берёт с git.narez.xyz. Лицензия сменилась на GPL-3.0 с условием, что блок с автором и поддержкой из мода не убирают.",
+  "notes_uk": "Відхід з гітхабу і з голої IP-адреси. Мод ходить на margy.narez.xyz по https, оновлення бере з git.narez.xyz. Ліцензія змінилася на GPL-3.0 з умовою, що блок з автором і підтримкою з мода не прибирають."
 }

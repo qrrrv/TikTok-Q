@@ -164,15 +164,17 @@ def prepare():
             secret  TEXT NOT NULL,
             changed INTEGER NOT NULL DEFAULT 0
         );
-        CREATE TABLE IF NOT EXISTS proof (
-            uid      TEXT PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS proofs (
+            uid      TEXT NOT NULL,
+            holder   TEXT NOT NULL,
             code     TEXT NOT NULL,
             made     INTEGER NOT NULL DEFAULT 0,
             tried    INTEGER NOT NULL DEFAULT 0,
             last     INTEGER NOT NULL DEFAULT 0,
             was      TEXT NOT NULL DEFAULT '',
             was_made INTEGER NOT NULL DEFAULT 0,
-            holder   TEXT NOT NULL DEFAULT ''
+            ip       TEXT NOT NULL DEFAULT '',
+            PRIMARY KEY (uid, holder)
         );
         CREATE TABLE IF NOT EXISTS gradient (
             uid     TEXT PRIMARY KEY,
@@ -225,14 +227,9 @@ def prepare():
                        % column)
     # keys used to be handed to whoever asked first, so every key that exists
     # was made under a rule that no longer holds
-    # the code before this one is kept as well: replacing a code used to make
-    # the one already sitting in somebody's bio worthless that second
-    proof_columns = [row[1] for row in db.execute("PRAGMA table_info(proof)")]
-    for column, kind in (("was", "TEXT NOT NULL DEFAULT ''"),
-                         ("was_made", "INTEGER NOT NULL DEFAULT 0"),
-                         ("holder", "TEXT NOT NULL DEFAULT ''")):
-        if column not in proof_columns:
-            db.execute("ALTER TABLE proof ADD COLUMN %s %s" % (column, kind))
+    # codes are now one per asker rather than one per account: a code that
+    # everybody was handed proved nothing about who was asking
+    db.execute("DROP TABLE IF EXISTS proof")
     owner_columns = [row[1] for row in db.execute("PRAGMA table_info(owner)")]
     for column, kind in (("proved", "INTEGER NOT NULL DEFAULT 0"),
                          ("proved_at", "INTEGER NOT NULL DEFAULT 0"),
@@ -426,17 +423,21 @@ def a_read_to_spare():
         return True
 
 
+#: how many codes one account may have out at once, one per asker
+PROOFS_EACH = 5
+
+
 def prove(body, ip):
-    """A code for this account to put in its bio.
+    """A code for this account to put in its bio, and a secret for the asker.
 
-    The same code comes back every time, and asking again puts its clock back
-    to the start. A code used to be replaced once it was old, which is the
-    worst possible moment: it is exactly then that somebody has it pasted in
-    their bio and is on their way back to press Check.
+    One code per asker, not one per account. A code everybody was handed
+    proved only that somebody, somewhere, had put it in the bio -- and the
+    key went to whoever called the check first, which could be anyone
+    watching that bio. Now the check asks for the code *that asker* was
+    given, and only its holder can spend it.
 
-    A code is worth nothing to anybody else. It proves the account whose page
-    carries it, so the same code in somebody else's bio proves their account
-    and nothing more.
+    The same asker gets the same code back: a code that changes while it is
+    sitting in somebody's bio is how people were stranded before.
     """
     uid = body.get("uid", "")
     if not sane(uid):
@@ -444,19 +445,52 @@ def prove(body, ip):
 
     now = int(time.time())
     db = connect()
-    row = db.execute("SELECT code, holder FROM proof WHERE uid = ?", (uid,)).fetchone()
-    code, made = (row[0] if row else "margyt-" + secrets.token_hex(3)), now
-    # the code goes in a bio, where everyone can read it, so it cannot be the
-    # only thing standing between an account and its key. This does not leave
-    # the phone that asked
-    holder = (row[1] if row and row[1] else secrets.token_hex(16))
-    db.execute("INSERT INTO proof (uid, code, made, tried, last, holder)"
-               " VALUES (?,?,?,0,0,?) ON CONFLICT(uid) DO UPDATE SET"
-               " made = excluded.made, tried = 0, last = 0, holder = excluded.holder",
-               (uid, code, made, holder))
+    # a phone that already has a secret for this account gets its own code
+    # back; anybody else asking gets one of their own, which is not the code
+    # sitting in that bio
+    row = mine_proof(db, uid, body.get("holder", ""), ip)
+
+    fresh = bool(body.get("fresh"))
+    if row and not fresh:
+        code, holder = row[1], row[0]
+        db.execute("UPDATE proofs SET made = ?, tried = 0, last = 0, ip = ?"
+                   " WHERE uid = ? AND holder = ?", (now, ip, uid, holder))
+    elif row and fresh:
+        # the one already in a bio keeps working for a while, so asking for
+        # another does not strand whoever had pasted the first
+        code, holder = "margyt-" + secrets.token_hex(3), row[0]
+        db.execute("UPDATE proofs SET code = ?, made = ?, tried = 0, last = 0,"
+                   " was = ?, was_made = ?, ip = ?"
+                   " WHERE uid = ? AND holder = ?",
+                   (code, now, row[1], now, ip, uid, holder))
+    else:
+        code, holder = "margyt-" + secrets.token_hex(3), secrets.token_hex(16)
+        spare = db.execute(
+            "SELECT holder FROM proofs WHERE uid = ? ORDER BY made DESC"
+            " LIMIT -1 OFFSET ?", (uid, PROOFS_EACH - 1)).fetchall()
+        for (old,) in spare:
+            db.execute("DELETE FROM proofs WHERE uid = ? AND holder = ?", (uid, old))
+        db.execute("INSERT INTO proofs (uid, holder, code, made, tried, last, ip)"
+                   " VALUES (?,?,?,?,0,0,?)", (uid, holder, code, now, ip))
     db.commit()
     db.close()
-    return 200, {"code": code, "holder": holder, "until": made + PROOF_LIVES}
+    return 200, {"code": code, "holder": holder, "until": now + PROOF_LIVES}
+
+
+def mine_proof(db, uid, holder, ip):
+    """The row that belongs to this asker: (holder, code, was, was_made, tried, last).
+
+    Only the secret answers. Matching on the address the request came from was
+    the obvious kindness to older mods, and it is not safe here: half of these
+    phones sit behind the same few VPN exits, so "the same address" is not the
+    same person. A mod that sends no secret cannot prove anything any more,
+    and has to be updated.
+    """
+    if not isinstance(holder, str) or not re.fullmatch(r"[0-9a-f]{32}", holder or ""):
+        return None
+    return db.execute(
+        "SELECT holder, code, was, was_made, tried, last FROM proofs"
+        " WHERE uid = ? AND holder = ?", (uid, holder)).fetchone()
 
 
 def prove_check(body, ip):
@@ -474,37 +508,35 @@ def prove_check(body, ip):
 
     now = int(time.time())
     db = connect()
-    row = db.execute("SELECT code, made, tried, last, was, was_made, holder"
-                     " FROM proof WHERE uid = ?", (uid,)).fetchone()
+    # only the asker's own code counts. Somebody else's request for the same
+    # account carries a different code, which is not the one in that bio
+    row = mine_proof(db, uid, body.get("holder", ""), ip)
     if not row:
         db.close()
+        if not body.get("holder"):
+            return 403, {"error": "this mod is too old to prove anything"}
         return 410, {"error": "ask for a code first"}
-    # a phone that says which secret it holds must hold the right one. One
-    # that says nothing is an older mod, and is let through until they have
-    # had time to update
-    told = body.get("holder", "")
-    if told and not (isinstance(told, str)
-                     and secrets.compare_digest(told, row[6] or "")):
-        db.close()
-        return 403, {"error": "that is not the code's owner"}
+    holder, tried, last = row[0], row[4], row[5]
+
     codes = []
-    if now - row[1] <= PROOF_LIVES:
-        codes.append(row[0])
+    made = db.execute("SELECT made FROM proofs WHERE uid = ? AND holder = ?",
+                      (uid, holder)).fetchone()
+    if made and now - made[0] <= PROOF_LIVES:
+        codes.append(row[1])
     # the one before it, for as long as somebody could still be looking at it
-    if row[4] and now - row[5] <= PROOF_LIVES + PROOF_SPARE:
-        codes.append(row[4])
+    if row[2] and now - row[3] <= PROOF_LIVES + PROOF_SPARE:
+        codes.append(row[2])
     if not codes:
         db.close()
         return 410, {"error": "ask for a code first"}
-    tried, last = row[2], row[3]
     if tried >= PROOF_TRIES:
         db.close()
         return 429, {"error": "too many tries, ask for a new code"}
     if now - last < 5:
         db.close()
         return 429, {"error": "too often", "wait": 5 - (now - last)}
-    db.execute("UPDATE proof SET tried = tried + 1, last = ? WHERE uid = ?",
-               (now, uid))
+    db.execute("UPDATE proofs SET tried = tried + 1, last = ?"
+               " WHERE uid = ? AND holder = ?", (now, uid, holder))
     db.commit()
     db.close()
 
@@ -538,7 +570,8 @@ def prove_check(body, ip):
                " token = excluded.token, proved = 1, proved_at = excluded.proved_at,"
                " name = excluded.name",
                (uid, token, now, now, who.get("username") or name))
-    db.execute("DELETE FROM proof WHERE uid = ?", (uid,))
+    # every outstanding code for this account goes: it is proved now
+    db.execute("DELETE FROM proofs WHERE uid = ?", (uid,))
     db.commit()
     out = mine(uid)
     db.close()

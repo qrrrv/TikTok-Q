@@ -44,8 +44,7 @@ public final class Cats {
     private static final int NEEDED = 5;
     private static final long GAP = 1000;
 
-    private static final String REPOSITORY =
-            "https://raw.githubusercontent.com/narezany/Margelet/main/";
+    private static final String REPOSITORY = "https://margy.narez.xyz/cats/";
     private static final String LIST = REPOSITORY + "cats.json";
 
     /** One cat: a photograph, what it is called, and who brought it. */

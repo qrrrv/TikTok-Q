@@ -37,7 +37,7 @@ import tiktok
 TOKEN_FILE = os.path.join(HERE, "bot.txt")
 
 #: where the badge service answers, for the avatar it passes on
-SITE = "http://212.192.210.234"
+SITE = "https://margy.narez.xyz"
 
 #: who receives an icon somebody offers
 OWNER = 7826361017

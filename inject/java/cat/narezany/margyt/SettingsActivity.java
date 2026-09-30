@@ -66,9 +66,9 @@ public class SettingsActivity extends Activity {
             "https://tiktok.com/@narezany?_r=1&_t=ZT-99hPDJ26hji_";
     private static final String HELPER = "https://www.tiktok.com/@MS4wLjABAAAApBE7v5"
             + "y_tClqKlwqBpZNwzIBn1K7aRJLDxegPPnx8joas1EmS8NZpVFdWATb4zGf";
-    private static final String GITHUB = "https://github.com/narezany/MargyT";
+    private static final String GITHUB = "https://git.narez.xyz/narezany/MargyT";
     private static final String DOCS =
-            "https://github.com/narezany/MargyT/blob/main/docs/plugins.md";
+            "https://git.narez.xyz/narezany/MargyT/src/branch/main/docs/plugins.md";
     private static final String YOOMONEY = "https://yoomoney.ru/to/4100118196133693";
     private static final String CARD_NUMBER = "2204120143055305";
 
@@ -854,7 +854,8 @@ public class SettingsActivity extends Activity {
             // the card stays open on a no, with the trouble under the code
             reply.said(ok, trouble, Proof.waiting(), Proof.wantsName());
             rebuild();
-        }));
+        }), reply -> Proof.fresh((ok, trouble) ->
+                reply.said(ok, trouble, Proof.waiting(), false)));
     }
 
     /** Something to press, rather than a row that happens to do something. */
@@ -1119,7 +1120,7 @@ public class SettingsActivity extends Activity {
     private static final int PICK_TEXTURES = 0x4D54;  // "MT"
 
     private static final String TEXTURE_DOCS =
-            "https://github.com/narezany/MargyT/blob/main/docs/textures.md";
+            "https://git.narez.xyz/narezany/MargyT/src/branch/main/docs/textures.md";
 
     private View packRow(final Textures.Pack one) {
         boolean chosen = one.file.equals(Textures.pack());
@@ -1900,7 +1901,11 @@ public class SettingsActivity extends Activity {
      */
     private View versions() {
         TextView view = new TextView(this);
-        view.setText("MargyT " + Version.MOD + "  ·  TikTok " + Version.TIKTOK);
+        // the author and the licence live here as well: the licence asks that
+        // a fork keep this line and the card that asks for support, rather
+        // than moving the name into print nobody reads
+        view.setText("MargyT " + Version.MOD + "  ·  TikTok " + Version.TIKTOK
+                + "\n" + Text.MADE_BY);
         view.setTextColor(skin.muted());
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         view.setGravity(Gravity.CENTER);

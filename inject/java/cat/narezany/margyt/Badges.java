@@ -44,7 +44,7 @@ public final class Badges {
      * and nobody could decide anything about their own. So there is a small
      * service instead, and it answers with the same shape the file had.
      */
-    public static final String SERVER = "http://212.192.210.234";
+    public static final String SERVER = "https://margy.narez.xyz/api";
 
     private static final String SOURCE = SERVER + "/badges";
     private static final String FILES = SERVER + "/icon/";

@@ -28,6 +28,13 @@ public final class Proof {
 
     private static final String KEY_PROVED = "proved_uid";
 
+    //: the code and the secret are kept on the phone as well as in memory:
+    //: losing them to a restart means the code already pasted in a bio stops
+    //: being the one this phone may spend
+    private static final String KEY_CODE = "proof_code";
+    private static final String KEY_HOLDER = "proof_holder";
+    private static final String KEY_FOR = "proof_for";
+
     /** The code the server last gave, kept only while the screen is open. */
     private static volatile String code = "";
 
@@ -82,7 +89,27 @@ public final class Proof {
     }
 
     public static String waiting() {
+        if (code.length() == 0) remember();
         return code;
+    }
+
+    /** Take the code and the secret back off the phone, once. */
+    private static synchronized void remember() {
+        if (code.length() > 0) return;
+        String uid = Account.id();
+        SharedPreferences prefs = prefs();
+        if (uid == null || prefs == null) return;
+        if (!uid.equals(prefs.getString(KEY_FOR, ""))) return;
+        code = prefs.getString(KEY_CODE, "");
+        holder = prefs.getString(KEY_HOLDER, "");
+    }
+
+    private static void keep() {
+        String uid = Account.id();
+        SharedPreferences prefs = prefs();
+        if (uid == null || prefs == null) return;
+        prefs.edit().putString(KEY_FOR, uid).putString(KEY_CODE, code)
+                .putString(KEY_HOLDER, holder).apply();
     }
 
     // ------------------------------------------------------------- the asking
@@ -94,11 +121,14 @@ public final class Proof {
             answer(then, false, Text.PROVE_NO_ACCOUNT);
             return;
         }
+        remember();
         Net.away("proof: code", new Runnable() {
             @Override
             public void run() {
+                // the secret goes back with the asking, so this phone is
+                // handed its own code again rather than a new one each time
                 Net.Said said = Net.talk(Badges.SERVER + "/prove",
-                        json("uid", uid));
+                        json("uid", uid, "holder", holder));
                 if (!said.ok()) {
                     answer(then, false, trouble(said));
                     return;
@@ -106,7 +136,9 @@ public final class Proof {
                 try {
                     JSONObject told = new JSONObject(said.body);
                     code = told.optString("code", "");
-                    holder = told.optString("holder", "");
+                    String key = told.optString("holder", "");
+                    if (key.length() > 0) holder = key;
+                    keep();
                 } catch (Throwable error) {
                     Diary.note("proof: " + error);
                 }
@@ -129,6 +161,7 @@ public final class Proof {
             return;
         }
         final String asked = clean(name);
+        remember();
         Net.away("proof: check", new Runnable() {
             @Override
             public void run() {
@@ -159,6 +192,7 @@ public final class Proof {
                         code = "";
                         holder = "";
                         needsName = false;
+                        keep();
                         ok = true;
                     }
                 } catch (Throwable error) {
@@ -169,16 +203,58 @@ public final class Proof {
         });
     }
 
+    /**
+     * Throw this code away and take another.
+     *
+     * For the code that got left in a bio somewhere, or the one somebody
+     * showed in a screenshot. The one before it goes on working for a while,
+     * so asking for a new code never breaks a bio that already has the old.
+     */
+    public static void fresh(final Then then) {
+        final String uid = Account.id();
+        if (uid == null || uid.length() == 0) {
+            answer(then, false, Text.PROVE_NO_ACCOUNT);
+            return;
+        }
+        Net.away("proof: fresh", new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Net.Said said = Net.talk(Badges.SERVER + "/prove",
+                            new JSONObject().put("uid", uid).put("holder", holder)
+                                    .put("fresh", true).toString());
+                    if (!said.ok()) {
+                        answer(then, false, trouble(said));
+                        return;
+                    }
+                    JSONObject told = new JSONObject(said.body);
+                    String made = told.optString("code", "");
+                    String key = told.optString("holder", "");
+                    if (made.length() > 0) code = made;
+                    if (key.length() > 0) holder = key;
+                    keep();
+                    needsName = false;
+                    answer(then, made.length() > 0, made.length() > 0 ? "" : Text.PROVE_FAILED);
+                } catch (Throwable error) {
+                    Diary.note("proof: " + error);
+                    answer(then, false, Text.PROVE_FAILED);
+                }
+            }
+        });
+    }
+
     /** Ask what the code is now, in the thread that just failed a check. */
     private static void mint(String uid) {
         try {
-            Net.Said said = Net.talk(Badges.SERVER + "/prove", json("uid", uid));
+            Net.Said said = Net.talk(Badges.SERVER + "/prove",
+                    json("uid", uid, "holder", holder));
             if (!said.ok()) return;
             JSONObject told = new JSONObject(said.body);
             String fresh = told.optString("code", "");
             if (fresh.length() > 0) code = fresh;
             String key = told.optString("holder", "");
             if (key.length() > 0) holder = key;
+            keep();
         } catch (Throwable error) {
             Diary.note("proof: " + error);
         }

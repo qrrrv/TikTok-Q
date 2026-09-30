@@ -15,8 +15,13 @@ import time
 import urllib.parse
 import urllib.request
 
-BROWSER = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-           " (KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+#: a phone rather than a desktop, and that is not a detail. TikTok's firewall
+#: answers this box's address with a javascript challenge when the request
+#: looks like a desktop browser, and serves the page when it looks like a
+#: phone. The same request from a home connection is served either way.
+BROWSER = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)"
+           " AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5"
+           " Mobile/15E148 Safari/604.1")
 
 #: TikTok hands out names of letters, digits, dots and underscores -- but a
 #: bug in 2024 let people take names in other alphabets, and those accounts

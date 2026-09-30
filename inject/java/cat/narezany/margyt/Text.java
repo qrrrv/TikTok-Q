@@ -159,11 +159,11 @@ final class Text {
             "Это тестовая сборка MargyT — она только для тех, кто поддержал "
                     + "разработку. Настройки мода откроются на аккаунте со значком "
                     + "поддержавшего; TikTok работает как обычно. Если значка нет, "
-                    + "поставьте обычную версию с GitHub.",
+                    + "поставьте обычную версию с сайта.",
             "Це тестова збірка MargyT — вона лише для тих, хто підтримав "
                     + "розробку. Налаштування мода відкриються на акаунті зі значком "
                     + "того, хто підтримав; TikTok працює як завжди. Якщо значка "
-                    + "немає, встановіть звичайну версію з GitHub.",
+                    + "немає, встановіть звичайну версію з сайту.",
             "This is a test build of MargyT, and it is for the people who paid "
                     + "for the work. The mod's settings open on an account with the "
                     + "supporter badge; TikTok itself works as usual. Without the "
@@ -265,6 +265,14 @@ final class Text {
             "Натисни на код, щоб скопіювати",
             "Tap the code to copy it");
 
+    static final String PROVE_FRESH = pick(
+            "Другой код", "Інший код", "A different code");
+
+    static final String PROVE_FRESH_DONE = pick(
+            "Код заменён, вставь новый в описание",
+            "Код замінено, встав новий в опис",
+            "Here is another one, put it in the bio");
+
     static final String PROVE_CHECKING = pick(
             "Смотрю твою страницу…", "Дивлюсь твою сторінку…", "Reading your page...");
 
@@ -331,6 +339,11 @@ final class Text {
             "Не вышло", "Не вийшло", "That did not work");
 
     // ----------------------------------------------- fixes without an apk
+
+    static final String MADE_BY = pick(
+            "Сделал @narezany · GPL-3.0 с доп. условиями",
+            "Зробив @narezany · GPL-3.0 з дод. умовами",
+            "Made by @narezany · GPL-3.0 with additional terms");
 
     static final String PATCH = pick("Заплатки", "Латки", "Patches");
 

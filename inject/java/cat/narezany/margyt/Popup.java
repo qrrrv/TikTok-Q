@@ -421,7 +421,13 @@ public final class Popup {
         void check(String name, Reply reply);
     }
 
-    public static void prove(Context context, String code, final Checking checking) {
+    /** Asked when somebody wants a different code, rather than this one. */
+    public interface Fresh {
+        void want(Reply reply);
+    }
+
+    public static void prove(Context context, String code, final Checking checking,
+                             final Fresh fresh) {
         try {
             Skin skin = Skin.remembered(context);
             final Dialog dialog = new Dialog(context);
@@ -496,6 +502,15 @@ public final class Popup {
             named.setVisibility(View.GONE);
             card.addView(named, wide(context, 10));
 
+            final TextView again = new TextView(context);
+            again.setText(Text.PROVE_FRESH);
+            again.setTextColor(Accent.colour());
+            again.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            again.setGravity(Gravity.CENTER);
+            again.setPadding(dp(context, 8), dp(context, 10), dp(context, 8),
+                    dp(context, 2));
+            card.addView(again, wide(context, 0));
+
             final TextView tap = new TextView(context);
             tap.setText(Text.PROVE_TAP);
             tap.setTextColor(skin.muted());
@@ -540,6 +555,25 @@ public final class Popup {
                 }
             });
             card.addView(go, wide(context, 14));
+
+            again.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (fresh == null) return;
+                    again.setEnabled(false);
+                    again.setAlpha(0.6f);
+                    fresh.want(new Reply() {
+                        @Override
+                        public void said(boolean ok, String trouble, String made,
+                                         boolean askName) {
+                            if (made != null && made.length() > 0) shown.setText(made);
+                            tap.setText(ok ? Text.PROVE_FRESH_DONE : trouble);
+                            again.setEnabled(true);
+                            again.setAlpha(1f);
+                        }
+                    });
+                }
+            });
 
             TextView hidden = new TextView(context);
             hidden.setText(Text.PROVE_HIDDEN);

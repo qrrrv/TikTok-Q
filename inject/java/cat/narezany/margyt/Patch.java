@@ -249,7 +249,18 @@ public final class Patch {
                     JSONObject told = new JSONObject(asked.body);
                     String where = told.optString("url", "");
                     String which = told.optString("version", "");
-                    if (where.length() == 0 || which.equals(running())) {
+                    if (where.length() == 0) {
+                        // the server has none for this build: whatever is on
+                        // the shelf was taken back, so it goes. Without this,
+                        // recalling a patch means publishing another one
+                        if (onShelf(context)) {
+                            drop(context);
+                            Diary.note("patch: taken back, the server offers none");
+                        }
+                        answer(then, false, "");
+                        return;
+                    }
+                    if (which.equals(running())) {
                         answer(then, false, "");
                         return;
                     }

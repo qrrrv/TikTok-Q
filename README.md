@@ -606,7 +606,14 @@ rewrites are the part that has to find them again in a rebuilt apk.
 
 ## Licence
 
-MIT, for the code in this repository. TikTok's apk is not here and its terms are
-its own — this repository is patches, not a redistribution.
+GPL-3.0-or-later, with additional terms under its section 7 that are in
+[ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md). The short version: fork it, change
+it, ship it, but leave the screen that names the author and asks for support
+where people can see it, and say that your build is yours rather than his.
+
+Up to 0.23.2 this was MIT and those copies stay MIT.
+
+TikTok's apk is not here and its terms are its own: this repository is patches,
+not a redistribution.
 
 The Material icons under `icons/` are Google's, Apache 2.0.
