@@ -167,7 +167,7 @@ final class Text {
             "This is a test build of MargyT, and it is for the people who paid "
                     + "for the work. The mod's settings open on an account with the "
                     + "supporter badge; TikTok itself works as usual. Without the "
-                    + "badge, install the ordinary version from GitHub.");
+                    + "badge, install the ordinary version from the site.");
 
     static final String TEST_CLOSE = pick("Понятно", "Зрозуміло", "I see");
 
@@ -634,8 +634,8 @@ final class Text {
             "How to make a texture pack");
 
     static final String TEXTURES_DOCS_NOTE = pick(
-            "Документация на GitHub", "Документація на GitHub",
-            "The documentation on GitHub");
+            "Документация на нашем гите", "Документація на нашому гіті",
+            "The documentation on our git");
 
     static final String TEXTURES_WRONG_VERSION = pick(
             "Для другой версии TikTok", "Для іншої версії TikTok",
@@ -778,7 +778,8 @@ final class Text {
             "Как писать плагины", "Як писати плагіни", "Writing plugins");
 
     static final String PLUGIN_DOCS_NOTE = pick(
-            "Документация на GitHub", "Документація на GitHub", "The documentation on GitHub");
+            "Документация на нашем гите", "Документація на нашому гіті",
+            "The documentation on our git");
 
     static final String PLUGIN_INSTALLED = pick(
             "Плагин установлен", "Плагін встановлено", "Plugin installed");
@@ -851,7 +852,7 @@ final class Text {
             "Уже последняя версия", "Вже остання версія", "This is the latest");
 
     static final String UPDATE_NO_ANSWER = pick(
-            "GitHub не ответил", "GitHub не відповів", "GitHub did not answer");
+            "Сервер не ответил", "Сервер не відповів", "The server did not answer");
 
     static final String UPDATE_ALLOW = pick(
             "Разрешите установку из этого источника, и я поставлю",

@@ -23,7 +23,7 @@ import java.util.Map;
  * again every five minutes. Adding a badge is editing that file.
  *
  * What arrives is kept on disk as well, so the badge is there on the next
- * start before the network has answered, and stays there if GitHub is not
+ * start before the network has answered, and stays there if the server is not
  * reachable at all. Nothing waits on the network: the first draw uses whatever
  * is already known, and a refresh that finds something new simply applies from
  * then on.
@@ -223,7 +223,7 @@ public static final String KEY = "badges_on";
     // ------------------------------------------------------------- keeping up
 
     /**
-     * Read what is on disk, then ask GitHub -- now and every five minutes.
+     * Read what is on disk, then ask the server -- now and every five minutes.
      *
      * Called from the mod's start-up hook, so the first read happens before
      * TikTok has drawn anything.

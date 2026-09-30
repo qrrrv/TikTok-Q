@@ -66,7 +66,7 @@ public class SettingsActivity extends Activity {
             "https://tiktok.com/@narezany?_r=1&_t=ZT-99hPDJ26hji_";
     private static final String HELPER = "https://www.tiktok.com/@MS4wLjABAAAApBE7v5"
             + "y_tClqKlwqBpZNwzIBn1K7aRJLDxegPPnx8joas1EmS8NZpVFdWATb4zGf";
-    private static final String GITHUB = "https://git.narez.xyz/narezany/MargyT";
+    private static final String GIT = "https://git.narez.xyz/narezany/MargyT";
     private static final String DOCS =
             "https://git.narez.xyz/narezany/MargyT/src/branch/main/docs/plugins.md";
     private static final String YOOMONEY = "https://yoomoney.ru/to/4100118196133693";
@@ -430,7 +430,7 @@ public class SettingsActivity extends Activity {
         links.addView(line());
         links.addView(linkRow("group", Text.FORUM, "@margeletforum", FORUM));
         links.addView(line());
-        links.addView(linkRow("extension", Text.SOURCE, "narezany/MargyT", GITHUB));
+        links.addView(linkRow("extension", Text.SOURCE, "narezany/MargyT", GIT));
         links.addView(line());
         links.addView(toggleRow("favorite_border", Text.BADGES_ON, Badges.isEnabled(),
                 Badges::setEnabled));
