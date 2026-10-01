@@ -35,13 +35,13 @@ jobs:
             APK_URL="$(python3 - <<'PY'
           import html
           import re
-          from urllib.parse import parse_qs, unquote, urljoin, urlparse
+          from urllib.parse import parse_qs, quote, unquote, urljoin, urlparse
 
           page = open('/tmp/apkcombo.html', encoding='utf-8').read()
           for href in re.findall(r'href="([^"]*?/r2\?u=[^"]+)"', page):
               href = html.unescape(href)
               target = parse_qs(urlparse(urljoin('https://apkcombo.com', href)).query).get('u', [''])[0]
-              target = unquote(target)
+              target = quote(unquote(target), safe=':/?&=;%+,-._~')
               if '.apk?' in target.lower() or target.lower().endswith('.apk'):
                   print(target)
                   break
