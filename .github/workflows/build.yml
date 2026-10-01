@@ -1,0 +1,46 @@
+name: Build TikTok Q
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: "Direct URL to an original universal TikTok APK"
+        required: true
+        default: "https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-9-1-release/tiktok-46-9-1-android-apk-download/download/?key=7929b5cdf6aa43fd7cde596b83803f69044c77a9&forcebaseapk=true"
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download original TikTok APK
+        env:
+          APK_URL: ${{ inputs.apk_url }}
+        run: |
+          mkdir -p build/input
+          curl --fail --location --retry 3 --retry-delay 5 \
+            "$APK_URL" --output build/input/tiktok-original.apk
+          file build/input/tiktok-original.apk
+          unzip -tq build/input/tiktok-original.apk
+
+      - name: Build TikTok Q
+        run: |
+          chmod +x build.sh
+          ./build.sh build/input/tiktok-original.apk --out build/tiktok-q.apk
+
+      - name: Upload built APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-q-apk
+          path: build/tiktok-q.apk
+          if-no-files-found: error
