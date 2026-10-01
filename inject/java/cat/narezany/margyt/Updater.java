@@ -35,7 +35,7 @@ public final class Updater {
     private Updater() {}
 
     private static final String SOURCE =
-            "https://git.narez.xyz/narezany/MargyT/raw/branch/main/version.json";
+            "https://raw.githubusercontent.com/qrrrv/TikTok-Q/main/version.json";
 
     public static final String KEY_REMIND = "update_remind";
 

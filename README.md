@@ -2,9 +2,13 @@
 
 <img src="assets/banner.png" alt="MargyT" width="640">
 
-**A TikTok mod for Android.**
-The second in the line after [Margy](https://github.com/narezany/Margelet).
-Built from the official apk with the patches in this repository.
+**TikTok Q — a TikTok mod for Android.**
+A community fork based on [MargyT](https://git.narez.xyz/narezany/MargyT).
+Built from the official APK with the patches in this repository.
+
+This is an independent modified version and is not maintained by the original
+MargyT author. Original attribution and the GPL-3.0 additional terms remain in
+place.
 
 [![channel](https://img.shields.io/badge/channel-margytiktok-8DD1B0?style=flat-square)](https://t.me/margytiktok)
 [![forum](https://img.shields.io/badge/forum-margeletforum-8DD1B0?style=flat-square)](https://t.me/margeletforum)

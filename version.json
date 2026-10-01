@@ -1,8 +1,8 @@
 {
-  "_comment": "What the app checks to know whether it is out of date. It reads this from the project's own git server at startup and every five minutes; the badges come from the same box.",
+  "_comment": "What TikTok Q checks to know whether it is out of date.",
   "version": "1.24",
-  "url": "https://git.narez.xyz/narezany/MargyT/releases/download/v1.24/margyt.apk",
-  "notes": "Off GitHub and off a bare IP address. The mod now talks to margy.narez.xyz over https and takes its updates from git.narez.xyz. The licence is GPL-3.0 with a term that keeps the author's notices where people can see them.",
-  "notes_ru": "Уход с гитхаба и с голого айпи. Мод ходит на margy.narez.xyz по https, обновления берёт с git.narez.xyz. Лицензия сменилась на GPL-3.0 с условием, что блок с автором и поддержкой из мода не убирают.",
-  "notes_uk": "Відхід з гітхабу і з голої IP-адреси. Мод ходить на margy.narez.xyz по https, оновлення бере з git.narez.xyz. Ліцензія змінилася на GPL-3.0 з умовою, що блок з автором і підтримкою з мода не прибирають."
+  "url": "https://github.com/qrrrv/TikTok-Q/releases/latest/download/tiktok-q.apk",
+  "notes": "TikTok Q is an independent public fork based on MargyT. This release adds local feed statistics for videos, likes and reposts.",
+  "notes_ru": "TikTok Q — независимый публичный форк на базе MargyT. В этой версии добавлена локальная статистика видео, лайков и репостов из ленты.",
+  "notes_uk": "TikTok Q — незалежний публічний форк на базі MargyT. У цій версії додано локальну статистику відео, лайків і репостів зі стрічки."
 }

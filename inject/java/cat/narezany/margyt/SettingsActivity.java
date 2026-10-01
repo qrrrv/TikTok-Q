@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * MargyT's own screen, drawn in TikTok's settings language.
+ * TikTok Q's own screen, drawn in TikTok's settings language.
  *
  * Page, cards, title, grey section labels: the shapes are TikTok's, and so are
  * the colours -- not copied out of a screenshot but the ones the row measured
@@ -66,9 +66,9 @@ public class SettingsActivity extends Activity {
             "https://tiktok.com/@narezany?_r=1&_t=ZT-99hPDJ26hji_";
     private static final String HELPER = "https://www.tiktok.com/@MS4wLjABAAAApBE7v5"
             + "y_tClqKlwqBpZNwzIBn1K7aRJLDxegPPnx8joas1EmS8NZpVFdWATb4zGf";
-    private static final String GIT = "https://git.narez.xyz/narezany/MargyT";
+    private static final String GIT = "https://github.com/qrrrv/TikTok-Q";
     private static final String DOCS =
-            "https://git.narez.xyz/narezany/MargyT/src/branch/main/docs/plugins.md";
+            "https://github.com/qrrrv/TikTok-Q/blob/main/docs/plugins.md";
     private static final String YOOMONEY = "https://yoomoney.ru/to/4100118196133693";
     private static final String CARD_NUMBER = "2204120143055305";
 
@@ -150,7 +150,7 @@ public class SettingsActivity extends Activity {
     private void rebuild() {
         column.removeAllViews();
         column.addView(backArrow());
-        column.addView(title("MargyT"));
+        column.addView(title("TikTok Q"));
 
         if (Badges.freeStillOpen() && !Mine.hasFree()) column.addView(freeBanner());
         column.addView(donateBanner());
@@ -246,6 +246,22 @@ public class SettingsActivity extends Activity {
         feed.addView(toggleRow("image", Text.HIDE_PHOTOS, Feed.hides(Feed.KEY_PHOTOS),
                 on -> Feed.setHides(Feed.KEY_PHOTOS, on)));
         column.addView(wrap(feed));
+
+        column.addView(section(Text.STATS));
+        LinearLayout stats = card();
+        stats.addView(quiet(Text.STATS_NOTE));
+        stats.addView(line());
+        stats.addView(idRow(Text.STATS_VIDEOS, String.valueOf(Stats.videos())));
+        stats.addView(line());
+        stats.addView(idRow(Text.STATS_LIKES, String.valueOf(Stats.likes())));
+        stats.addView(line());
+        stats.addView(idRow(Text.STATS_REPOSTS, String.valueOf(Stats.reposts())));
+        stats.addView(line());
+        stats.addView(actionRow("delete", Text.STATS_RESET, null, () -> {
+            Stats.reset();
+            rebuild();
+        }));
+        column.addView(wrap(stats));
 
         column.addView(section(Text.VIDEO));
         LinearLayout video = card();

@@ -16,7 +16,7 @@ final class Text {
     private static final boolean RU = "ru".equals(language()) || "be".equals(language());
     private static final boolean UK = "uk".equals(language());
 
-    static final String ROW = pick("Настройки MargyT", "Налаштування MargyT", "MargyT settings");
+    static final String ROW = pick("Настройки TikTok Q", "Налаштування TikTok Q", "TikTok Q settings");
 
     static final String REGION = pick("Регион", "Регіон", "Region");
 
@@ -95,6 +95,23 @@ final class Text {
             "The owner of Margy and MargyT");
 
     static final String VIDEO = pick("Видео", "Відео", "Video");
+
+    static final String STATS = pick("Статистика", "Статистика", "Statistics");
+
+    static final String STATS_NOTE = pick(
+            "Локальный счётчик уникальных видео из ленты. Данные не отправляются наружу; "
+                    + "лайки и репосты считаются только если TikTok передал этот признак.",
+            "Локальний лічильник унікальних відео зі стрічки. Дані не надсилаються; "
+                    + "лайки та репости рахуються лише якщо TikTok передав цю ознаку.",
+            "A local counter of unique videos from the feed. Nothing is uploaded; "
+                    + "likes and reposts count only when TikTok exposes that flag.");
+
+    static final String STATS_VIDEOS = pick(
+            "Видео в ленте", "Відео у стрічці", "Videos seen");
+    static final String STATS_LIKES = pick("Лайки", "Лайки", "Likes");
+    static final String STATS_REPOSTS = pick("Репосты", "Репости", "Reposts");
+    static final String STATS_RESET = pick(
+            "Сбросить статистику", "Скинути статистику", "Reset statistics");
 
     static final String THEME = pick("Тема", "Тема", "Theme");
 
@@ -341,9 +358,9 @@ final class Text {
     // ----------------------------------------------- fixes without an apk
 
     static final String MADE_BY = pick(
-            "Сделал @narezany · GPL-3.0 с доп. условиями",
-            "Зробив @narezany · GPL-3.0 з дод. умовами",
-            "Made by @narezany · GPL-3.0 with additional terms");
+            "TikTok Q — форк MargyT · GPL-3.0 с доп. условиями",
+            "TikTok Q — форк MargyT · GPL-3.0 з дод. умовами",
+            "TikTok Q — a MargyT fork · GPL-3.0 with additional terms");
 
     static final String PATCH = pick("Заплатки", "Латки", "Patches");
 

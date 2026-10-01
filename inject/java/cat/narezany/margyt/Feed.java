@@ -155,6 +155,15 @@ public final class Feed {
     /** A page of posts without the ones nobody asked to see. */
     private static List without(List items) {
         if (items == null) return items;
+        // Observe before filters remove anything, so the counters describe the
+        // feed TikTok delivered rather than only what the person chose to see.
+        try {
+            for (Object item : items) {
+                if (item instanceof Aweme) Stats.observe(item);
+            }
+        } catch (Throwable error) {
+            Diary.note("stats feed: " + error);
+        }
         if (!isEnabled() && !hides(KEY_LIVE) && !hides(KEY_PHOTOS)
                 && Tags.all().isEmpty() && Patch.running().length() == 0) {
             return Plugins.feed(items);
