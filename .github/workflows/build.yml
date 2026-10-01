@@ -6,7 +6,7 @@ on:
       apk_url:
         description: "Direct URL to an original universal TikTok APK"
         required: true
-        default: "https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-9-1-release/tiktok-46-9-1-android-apk-download/download/?key=7929b5cdf6aa43fd7cde596b83803f69044c77a9&forcebaseapk=true"
+        default: "https://d.apkpure.com/b/APK/com.zhiliaoapp.musically?versionCode=2024701040&nc=arm64-v8a%2Carmeabi-v7a&sv=23"
         type: string
 
 jobs:
@@ -29,6 +29,7 @@ jobs:
         run: |
           mkdir -p build/input
           curl --fail --location --retry 3 --retry-delay 5 \
+            --user-agent "TikTok-Q-GitHub-Action/1.0" \
             "$APK_URL" --output build/input/tiktok-original.apk
           file build/input/tiktok-original.apk
           unzip -tq build/input/tiktok-original.apk
