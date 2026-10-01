@@ -1,6 +1,6 @@
 {
   "_comment": "What TikTok Q checks to know whether it is out of date.",
-  "version": "1.24",
+  "version": "1.25",
   "url": "https://github.com/qrrrv/TikTok-Q/releases/latest/download/tiktok-q.apk",
   "notes": "TikTok Q is an independent public fork based on MargyT. This release adds local feed statistics for videos, likes and reposts.",
   "notes_ru": "TikTok Q — независимый публичный форк на базе MargyT. В этой версии добавлена локальная статистика видео, лайков и репостов из ленты.",
