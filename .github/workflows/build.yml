@@ -6,15 +6,20 @@ on:
   workflow_dispatch:
     inputs:
       apk_url:
-        description: "APK URL or APKCombo page for an original universal TikTok APK"
+        description: "Direct APK URL or page for the original TikTok 47.1.4 universal APK"
         required: true
         default: "https://apkcombo.com/tiktok-videos-shop-live/com.zhiliaoapp.musically/download/apk"
         type: string
 
+# Do not let repeated manual dispatches race while downloading a 300–450 MB APK.
+concurrency:
+  group: tiktok-q-build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -39,7 +44,11 @@ jobs:
         run: |
           mkdir -p build/input
           if [[ "$APK_URL" == https://apkcombo.com/* ]]; then
-            curl --fail --location --retry 3 --retry-delay 5 \
+            # Large APK downloads sometimes end with an HTTP/2 INTERNAL_ERROR.
+            # HTTP/1.1 plus retry-all-errors makes the download recoverable.
+            curl --fail --location --http1.1 \
+              --retry 8 --retry-all-errors --retry-delay 10 --retry-max-time 1800 \
+              --connect-timeout 30 --max-time 1800 \
               --user-agent "TikTok-Q-GitHub-Action/1.0" \
               "$APK_URL" --output /tmp/apkcombo.html
             APK_URL="$(python3 - <<'PY'
@@ -60,7 +69,9 @@ jobs:
             )"
           fi
           test -n "$APK_URL"
-          curl --fail --location --retry 3 --retry-delay 5 \
+          curl --fail --location --http1.1 \
+            --retry 8 --retry-all-errors --retry-delay 10 --retry-max-time 1800 \
+            --connect-timeout 30 --max-time 1800 \
             --user-agent "TikTok-Q-GitHub-Action/1.0" \
             "$APK_URL" --output build/input/tiktok-original.apk
           file build/input/tiktok-original.apk
