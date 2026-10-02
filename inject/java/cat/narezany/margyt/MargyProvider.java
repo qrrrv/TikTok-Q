@@ -33,8 +33,10 @@ public final class MargyProvider extends ContentProvider {
         try {
             Context application = context.getApplicationContext();
             if (application instanceof Application) {
-                ((Application) application).registerActivityLifecycleCallbacks(new SettingsRow());
-                Watch.start((Application) application);
+                Application app = (Application) application;
+                app.registerActivityLifecycleCallbacks(new SettingsRow());
+                NavigationDesign.start(app);
+                Watch.start(app);
                 Lag.watch();
                 Diary.note("watching for the settings screen");
             } else {
