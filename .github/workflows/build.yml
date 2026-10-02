@@ -1,6 +1,8 @@
 name: Build TikTok Q
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       apk_url:
@@ -33,7 +35,7 @@ jobs:
 
       - name: Download original TikTok APK
         env:
-          APK_URL: ${{ inputs.apk_url }}
+          APK_URL: ${{ inputs.apk_url || 'https://apkcombo.com/tiktok-videos-shop-live/com.zhiliaoapp.musically/download/apk' }}
         run: |
           mkdir -p build/input
           if [[ "$APK_URL" == https://apkcombo.com/* ]]; then
