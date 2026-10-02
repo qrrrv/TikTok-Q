@@ -1,15 +1,16 @@
 package cat.narezany.margyt;
 
 import android.view.View;
-import android.widget.TextView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-/** Displays TikTok's own likes/reposts totals in the profile tab's number slot. */
+/** Displays TikTok's own likes/reposts totals in the profile tab's numeric badge. */
 public final class ProfileTabCounts {
 
-    private static final int VIDEO_NUMBER_ID = 2131401988;
+    // C71610Oao (the normal profile icon-tab view) binds its TuxAlertBadgeLayout here.
+    private static final int TAB_BADGE_ID = 2131363244;
+    private static final int BADGE_MAX_COUNT = 999999;
 
     private ProfileTabCounts() {}
 
@@ -33,7 +34,7 @@ public final class ProfileTabCounts {
         if (user == null || view == null) return;
 
         int count = readInt(user, likes ? "getFavoritingCount" : "getRepostCount", 0);
-        setNumber(view, formatCount(count));
+        setNumericBadge(view, count);
     }
 
     private static void invokeOriginalTabCallback(Object business, Object tab,
@@ -57,44 +58,37 @@ public final class ProfileTabCounts {
         }
     }
 
-    private static void setNumber(final View view, final String text) {
-        if (view == null) return;
-        view.post(new Runnable() {
+    private static void setNumericBadge(final View tabView, final int count) {
+        if (tabView == null) return;
+        tabView.post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Method setter = view.getClass().getMethod("setVideoNumber", String.class);
-                    setter.setAccessible(true);
-                    setter.invoke(view, text);
-                    return;
-                } catch (Throwable ignored) {
-                    // Some TikTok tab layouts expose the same number slot only as a child view.
-                }
-                try {
-                    View number = view.findViewById(VIDEO_NUMBER_ID);
-                    if (number instanceof TextView) {
-                        number.setVisibility(View.VISIBLE);
-                        Badge.setText((TextView) number, text);
+                    Object badge = tabView.findViewById(TAB_BADGE_ID);
+                    if (badge == null) {
+                        // C71610Oao keeps the same layout in this public field.
+                        try {
+                            badge = tabView.getClass().getField("LLJJIJIL").get(tabView);
+                        } catch (Throwable ignored) {
+                        }
                     }
+                    if (badge == null) return;
+
+                    invokeInt(badge, "setVariant", 1); // Tux numeric-count variant
+                    invokeInt(badge, "setMaxCount", BADGE_MAX_COUNT);
+                    invokeInt(badge, "setCount", Math.max(0, count));
+                    invokeNoArg(badge, "LIZJ"); // ProfileTabBaseBusiness hides it first.
                 } catch (Throwable ignored) {
-                    // A future app layout without a number slot should remain otherwise usable.
+                    // Keep TikTok's tab usable if a future release changes its badge view.
                 }
             }
         });
     }
 
-    private static String formatCount(int count) {
-        if (count < 0) count = 0;
-        try {
-            // TikTok's compact-number formatter is also used for the publication-tab count.
-            Class<?> formatter = Class.forName("X.0EYv");
-            Method method = formatter.getDeclaredMethod("LIZIZ", int.class);
-            method.setAccessible(true);
-            Object value = method.invoke(null, count);
-            if (value instanceof String) return (String) value;
-        } catch (Throwable ignored) {
-        }
-        return String.valueOf(count);
+    private static void invokeInt(Object receiver, String methodName, int value) throws Exception {
+        Method method = receiver.getClass().getMethod(methodName, int.class);
+        method.setAccessible(true);
+        method.invoke(receiver, value);
     }
 
     private static int readInt(Object receiver, String methodName, int fallback) {

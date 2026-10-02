@@ -646,6 +646,16 @@ class DexPatchTest(unittest.TestCase):
         self.assertIn("ProfileTabCounts;->Yc0(Ljava/lang/Object;Ljava/lang/Object;"
                       "ILandroid/view/View;)V", text)
 
+    def test_profile_counts_use_the_numeric_alert_badge_not_the_publish_tab_label(self):
+        helper = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                              "inject/java/cat/narezany/margyt/ProfileTabCounts.java")
+        with open(helper, encoding="utf-8") as source:
+            text = source.read()
+        self.assertIn("TAB_BADGE_ID = 2131363244", text)
+        self.assertIn('invokeInt(badge, "setVariant", 1)', text)
+        self.assertIn('invokeInt(badge, "setCount", Math.max(0, count))', text)
+        self.assertIn('invokeNoArg(badge, "LIZJ")', text)
+
     def test_a_field_read_becomes_a_call_and_a_move(self):
         """allowDownload is a field, so one instruction has to become two."""
         text = ("    iget-object v2, v5, Lcom/ss/android/ugc/aweme/feed/model/"
