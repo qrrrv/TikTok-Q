@@ -204,6 +204,9 @@ public final class Download {
      */
     public static boolean isPreventDownload(Aweme aweme) {
         if (aweme == null) return false;
+        // asked wherever a post is shown or shared, profile and search included,
+        // which makes it one more place for the counters to meet a post
+        Stats.observe(aweme);
         if (isAlways()) return false;
         return aweme.isPreventDownload();
     }

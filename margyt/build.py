@@ -599,6 +599,8 @@ class Build:
             owner, name = found
             self.detail("%s: %s->%s" % (label, owner, name))
             lines.append((label, owner, name))
+        for line in dexpatch.DATE_REPORT:
+            self.detail("date gates -- %s" % line)
         for label, expected, _descriptor, _ours, _target in dexpatch.DATE_STATICS:
             found = dexpatch.FOUND.get(label)
             if found is None:

@@ -354,6 +354,14 @@ DATE_STATICS: List[Tuple[str, str, str, str, str]] = [
     ("date gate LJFF", "LJFF", "(%s)Z" % STRING, "fromProfileOrOther", DATES),
 ]
 
+# The class that held the five gates in the release this was first written
+# against. A tie-breaker and nothing more: the build never trusts it unless
+# the class also carries all five.
+DATE_OWNER_HINT = "LX/0QeW;"
+
+# What the last search for the gates found, one line each, for the build log.
+DATE_REPORT: List[str] = []
+
 # and which subscription the system calls the default, which is -1 when there
 # is no card at all -- code that asks usually gives up on the spot
 MODEL_STATICS += [
@@ -1082,13 +1090,19 @@ def find_statics(dexes: Dict[str, bytes]) -> Dict[str, Tuple[str, str]]:
     obfuscator called it this release. Anything that matches in more than one
     class is dropped rather than guessed at: a rule that lands in the wrong
     place is worse than one that does not land at all.
+
+    The date gates are the exception, and the reason is their names. `LIZ`,
+    `LIZIZ` and the rest are what the obfuscator calls *any* method of that
+    shape, in hundreds of classes, so asking for the one class that has a
+    method called `LIZ` never gets a single answer. What is rare is a class
+    that has all five -- so that is what is looked for (`pick_date_gates`).
     """
     wanted = {descriptor: label for label, descriptor, _ours, _target
               in DISCOVERED_STATICS + DISCOVERED_VIRTUALS}
     seen: Dict[str, set] = {label: set() for label in wanted.values()}
     date_wanted = {(name, descriptor): label
                    for label, name, descriptor, _ours, _target in DATE_STATICS}
-    seen.update({label: set() for label in date_wanted.values()})
+    gates: Dict[str, set] = {label: set() for label in date_wanted.values()}
 
     for dex in dexes.values():
         for owner, name, descriptor in _static_methods(dex):
@@ -1097,13 +1111,147 @@ def find_statics(dexes: Dict[str, bytes]) -> Dict[str, Tuple[str, str]]:
                 seen[label].add((owner, name))
             label = date_wanted.get((name, descriptor))
             if label is not None:
-                seen[label].add((owner, name))
+                gates[label].add(owner)
 
     out: Dict[str, Tuple[str, str]] = {}
     for label, found in seen.items():
         if len(found) == 1:
             out[label] = next(iter(found))
+    out.update(pick_date_gates(gates, dexes))
     return out
+
+
+def pick_date_gates(gates: Dict[str, set],
+                    dexes: Optional[Dict[str, bytes]] = None) -> Dict[str, Tuple[str, str]]:
+    """Which class holds the five date gates, from who carries each of them.
+
+    `gates` maps each gate's label to every class that has a method of its
+    name and shape. The answer is the class in all five sets. When more than
+    one is, the ones that really define all five as statics win; if that is
+    still not one class, the class the feature was written against breaks the
+    tie. Anything else is "not found", and the build says why.
+    """
+    del DATE_REPORT[:]
+    labels = [label for label, _name, _descriptor, _ours, _target in DATE_STATICS]
+    for label in labels:
+        DATE_REPORT.append("%s: %d classes have a method of that name and shape"
+                           % (label, len(gates.get(label, ()))))
+
+    common: Optional[set] = None
+    for label in labels:
+        here = set(gates.get(label, ()))
+        common = here if common is None else common & here
+    common = common or set()
+    DATE_REPORT.append("%d of them have all five" % len(common))
+
+    if len(common) > 1 and dexes:
+        try:
+            defining = _owners_defining_gates(dexes, common)
+        except Exception as error:  # a dex this cannot read must not stop a build
+            defining = set()
+            DATE_REPORT.append("could not read the class definitions: %s" % error)
+        DATE_REPORT.append("%d of those define all five themselves, as statics"
+                           % len(defining))
+        if defining:
+            common = defining
+    if len(common) > 1 and DATE_OWNER_HINT in common:
+        common = {DATE_OWNER_HINT}
+        DATE_REPORT.append("still several: the class this was written against wins")
+
+    if len(common) == 1:
+        owner = next(iter(common))
+        DATE_REPORT.append("the gates are in %s" % owner)
+        return {label: (owner, name)
+                for label, name, _descriptor, _ours, _target in DATE_STATICS}
+
+    if not common:
+        # no class has all five: the old rule, each one alone, as long as
+        # every one of them is unique on its own
+        single = {label: next(iter(owners)) for label, owners in gates.items()
+                  if len(owners) == 1}
+        if len(single) == len(labels):
+            DATE_REPORT.append("no class has all five, but each is unique alone")
+            return {label: (single[label], name)
+                    for label, name, _descriptor, _ours, _target in DATE_STATICS}
+
+    DATE_REPORT.append("cannot tell which class holds the gates%s"
+                       % ((": " + ", ".join(sorted(common)[:6])) if common else ""))
+    return {}
+
+
+def _owners_defining_gates(dexes: Dict[str, bytes], owners: set) -> set:
+    """The owners, out of `owners`, that define all five gates as statics."""
+    wanted = {(name, descriptor)
+              for _label, name, descriptor, _ours, _target in DATE_STATICS}
+    out = set()
+    for dex in dexes.values():
+        for owner, defined in _static_definitions(dex, owners):
+            if wanted <= defined:
+                out.add(owner)
+    return out
+
+
+def _static_definitions(dex: bytes, owners: set):
+    """For each of `owners` defined in this dex: its static methods.
+
+    Yields (owner, {(name, descriptor), ...}). Only the classes asked about
+    have their method lists read; the rest are passed over by name.
+    """
+    if not any(owner.encode() in dex for owner in owners):
+        return
+    string_ids_off = struct.unpack_from("<I", dex, 60)[0]
+    type_ids_off = struct.unpack_from("<I", dex, 68)[0]
+    proto_ids_off = struct.unpack_from("<I", dex, 76)[0]
+    method_ids_off = struct.unpack_from("<I", dex, 92)[0]
+    class_defs_size, class_defs_off = struct.unpack_from("<2I", dex, 96)
+
+    def string(index: int) -> str:
+        at = struct.unpack_from("<I", dex, string_ids_off + 4 * index)[0]
+        length, at = _uleb(dex, at)
+        return dex[at:at + length].decode("utf-8", "replace")
+
+    def type_name(index: int) -> str:
+        return string(struct.unpack_from("<I", dex, type_ids_off + 4 * index)[0])
+
+    def descriptor(index: int) -> str:
+        _shorty, return_type, parameters = struct.unpack_from(
+            "<3I", dex, proto_ids_off + 12 * index)
+        arguments = ""
+        if parameters:
+            count = struct.unpack_from("<I", dex, parameters)[0]
+            arguments = "".join(
+                type_name(struct.unpack_from("<H", dex, parameters + 4 + 2 * i)[0])
+                for i in range(count))
+        return "(%s)%s" % (arguments, type_name(return_type))
+
+    for i in range(class_defs_size):
+        class_idx = struct.unpack_from("<I", dex, class_defs_off + 32 * i)[0]
+        owner = type_name(class_idx)
+        if owner not in owners:
+            continue
+        data_off = struct.unpack_from("<I", dex, class_defs_off + 32 * i + 24)[0]
+        if not data_off:
+            continue
+        counts = []
+        at = data_off
+        for _ in range(4):  # static fields, instance fields, direct, virtual
+            value, at = _uleb(dex, at)
+            counts.append(value)
+        for _ in range(counts[0] + counts[1]):
+            _diff, at = _uleb(dex, at)
+            _flags, at = _uleb(dex, at)
+        defined = set()
+        index = 0
+        for step in range(counts[2]):  # statics are always direct methods
+            diff, at = _uleb(dex, at)
+            flags, at = _uleb(dex, at)
+            _code, at = _uleb(dex, at)
+            index = diff if step == 0 else index + diff
+            if flags & 0x0008:  # ACC_STATIC
+                _owner, proto, name = struct.unpack_from(
+                    "<HHI", dex, method_ids_off + 8 * index)
+                defined.add((string(name), descriptor(proto)))
+        yield owner, defined
 
 
 def _static_methods(dex: bytes):
