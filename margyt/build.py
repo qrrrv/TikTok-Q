@@ -38,7 +38,9 @@ LABEL = "TikTok Q"
 # TikTok's settings -- but an activity still wants a label: it is what the
 # recents card and any "open with" list show.
 SETTINGS_LABEL = "TikTok Q settings"
-SETTINGS_THEME = "Theme_DeviceDefault_Light_NoActionBar"
+# The Activity paints its own Material 3 surfaces and follows system night
+# mode; do not force the old light-only theme before the first frame.
+SETTINGS_THEME = "Theme_DeviceDefault_NoActionBar"
 
 # what a renamed provider authority ends in, so two mods of the same app can
 # sit on one phone without the installer refusing the second

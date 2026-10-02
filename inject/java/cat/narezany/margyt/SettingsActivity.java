@@ -135,10 +135,11 @@ public class SettingsActivity extends Activity {
         try {
             getWindow().setStatusBarColor(skin.page);
             getWindow().setNavigationBarColor(skin.page);
-            if (!skin.dark()) {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            int flags = skin.dark() ? 0 : View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (!skin.dark() && android.os.Build.VERSION.SDK_INT >= 26) {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
             }
+            getWindow().getDecorView().setSystemUiVisibility(flags);
         } catch (Throwable ignored) {
         }
     }
@@ -2388,9 +2389,9 @@ public class SettingsActivity extends Activity {
         final TextView view = new TextView(this);
         view.setText(text);
         view.setTextColor(skin.text);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
-        view.setTypeface(Typeface.DEFAULT_BOLD);
-        view.setPadding(skin.margin, dp(8), skin.margin, dp(20));
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        view.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+        view.setPadding(skin.margin, dp(8), skin.margin, dp(18));
         // five taps in a row and a cat turns up; one by accident does nothing
         view.setOnClickListener(v -> Cats.tapped(view));
         return view;
@@ -2399,9 +2400,11 @@ public class SettingsActivity extends Activity {
     private View section(String text) {
         TextView view = new TextView(this);
         view.setText(text);
-        view.setTextColor(skin.muted());
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        view.setPadding(skin.margin + dp(4), dp(16), skin.margin, dp(8));
+        view.setTextColor(Accent.colour());
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        view.setAllCaps(true);
+        view.setPadding(skin.margin + dp(4), dp(18), skin.margin, dp(8));
         return view;
     }
 
@@ -2410,7 +2413,7 @@ public class SettingsActivity extends Activity {
         view.setText(message);
         view.setTextColor(skin.muted());
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        view.setPadding(skin.margin + dp(4), dp(16), skin.margin + dp(4), dp(4));
+        view.setPadding(skin.margin + dp(4), dp(12), skin.margin + dp(4), dp(6));
         return view;
     }
 
@@ -2421,14 +2424,14 @@ public class SettingsActivity extends Activity {
         background.setColor(skin.card);
         background.setCornerRadius(skin.radius);
         card.setBackground(background);
-        card.setPadding(0, dp(4), 0, dp(4));
+        card.setPadding(0, 0, 0, 0);
         return card;
     }
 
     private View wrap(View card) {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(skin.margin, 0, skin.margin, 0);
+        box.setPadding(skin.margin, 0, skin.margin, dp(8));
         box.addView(card, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         return box;
@@ -2436,7 +2439,7 @@ public class SettingsActivity extends Activity {
 
     private View line() {
         View line = new View(this);
-        line.setBackgroundColor((skin.text & 0x00FFFFFF) | 0x14000000);
+        line.setBackgroundColor(skin.dark() ? 0xFF49454F : 0xFFE7E0EC);
         return sized(line, 1);
     }
 
@@ -2445,6 +2448,7 @@ public class SettingsActivity extends Activity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(16), 0, dp(16), 0);
+        row.setMinimumHeight(dp(64));
         return row;
     }
 
@@ -2453,6 +2457,7 @@ public class SettingsActivity extends Activity {
         view.setText(text);
         view.setTextColor(skin.text);
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        view.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
         return view;
     }
 
@@ -2460,7 +2465,7 @@ public class SettingsActivity extends Activity {
         TextView view = new TextView(this);
         view.setText(text);
         view.setTextColor(skin.muted());
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         return view;
     }
 

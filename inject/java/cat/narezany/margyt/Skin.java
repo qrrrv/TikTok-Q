@@ -9,18 +9,17 @@ import android.graphics.Color;
 import android.view.View;
 
 /**
- * TikTok's own settings style, measured off the screen it is going on.
+ * Material 3 surface and typography tokens for the mod's own settings.
  *
  * The rows on that screen are drawn by Compose, out of colours and dimensions
  * that live in obfuscated Kotlin, and the resource table is no help either --
  * TikTok's colours are called `ag` and `ah` in there. Copying the numbers out
  * of a screenshot would make the row right once, for one release, on one phone.
  *
- * So the screen is asked instead. It is drawn into a bitmap the mod owns, and
- * the card colour, the text colour, the side margin and the corner radius are
- * read out of the pixels: whatever TikTok is drawing today, in whichever theme,
- * is what the row is built from. When that fails the fallback is plain -- black
- * or white and a sensible radius -- and the diary says which one was used.
+ * The screen used to sample TikTok's Compose UI and copy its cards. That made
+ * the mod look like a different app after every TikTok redesign. The mod page
+ * is now independent and uses MD3 roles; on Android 12+ its neutral and accent
+ * tones follow the system wallpaper without requiring AndroidX resources.
  */
 final class Skin {
 
@@ -42,7 +41,9 @@ final class Skin {
 
     /** The colour of a section label or a caption on this screen. */
     int muted() {
-        return (text & 0x00FFFFFF) | 0x66000000;
+        // MD3 onSurfaceVariant: readable secondary text, not translucent text
+        // whose result changes with whatever surface happens to be underneath.
+        return dark() ? 0xFFCAC4D0 : 0xFF49454F;
     }
 
     boolean dark() {
@@ -52,30 +53,11 @@ final class Skin {
     }
 
     /**
-     * The style measured last time, for MargyT's own screen to be drawn in.
-     *
-     * That screen can be opened from the launcher without TikTok's settings
-     * ever being on screen, so there is nothing to measure at the time -- what
-     * the row measured is kept instead, and used again here.
+     * The MD3 scheme for MargyT's own screen. It intentionally does not reuse
+     * the style measured from TikTok's settings row.
      */
     static Skin remembered(Context context) {
-        try {
-            SharedPreferences prefs =
-                    context.getSharedPreferences(Margy.PREFS, Context.MODE_PRIVATE);
-            if (prefs.contains("skin_card")) {
-                return new Skin(
-                        prefs.getInt("skin_page", 0xFF000000),
-                        prefs.getInt("skin_card", 0xFF1C1C1E),
-                        prefs.getInt("skin_text", 0xFFFFFFFF),
-                        prefs.getInt("skin_margin", Math.round(
-                                16 * context.getResources().getDisplayMetrics().density)),
-                        prefs.getInt("skin_radius", Math.round(
-                                12 * context.getResources().getDisplayMetrics().density)),
-                        true);
-            }
-        } catch (Throwable ignored) {
-        }
-        return fallback(context);
+        return material3(context);
     }
 
     void remember(Context context) {
@@ -120,6 +102,36 @@ final class Skin {
                 Math.round(16 * density),
                 Math.round(12 * density),
                 false);
+    }
+
+    /** Baseline MD3 with Android 12 dynamic neutral/accent roles when present. */
+    private static Skin material3(Context context) {
+        boolean dark = (context.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        float density = context.getResources().getDisplayMetrics().density;
+        int page = dark ? 0xFF141218 : 0xFFFFFBFE;
+        int card = dark ? 0xFF211F26 : 0xFFFFFBFE;
+        int text = dark ? 0xFFE6E1E9 : 0xFF1C1B1F;
+        // Android's dynamic neutral palette is the closest platform-native
+        // equivalent to MaterialTheme.colorScheme.surface/background.
+        int dynamicPage = dynamic(context, dark ? "system_neutral1_900"
+                : "system_neutral1_10");
+        int dynamicCard = dynamic(context, dark ? "system_neutral1_800"
+                : "system_neutral1_50");
+        if (dynamicPage != 0) page = dynamicPage;
+        if (dynamicCard != 0) card = dynamicCard;
+        return new Skin(page, card, text, Math.round(16 * density),
+                Math.round(12 * density), false);
+    }
+
+    private static int dynamic(Context context, String name) {
+        try {
+            if (android.os.Build.VERSION.SDK_INT < 31) return 0;
+            int id = context.getResources().getIdentifier(name, "color", "android");
+            return id == 0 ? 0 : context.getColor(id);
+        } catch (Throwable ignored) {
+            return 0;
+        }
     }
 
     // ------------------------------------------------------------ measuring
