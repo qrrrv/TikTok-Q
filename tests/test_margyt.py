@@ -625,6 +625,25 @@ class DexPatchTest(unittest.TestCase):
                       "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)"
                       "Ljava/util/List;", text)
 
+    def test_profile_like_and_repost_counts_use_the_real_user_getters(self):
+        text = ("    invoke-virtual {v1}, Lcom/ss/android/ugc/aweme/profile/model/User;"
+                "->getFavoritingCount()I\n"
+                "    invoke-virtual {v2}, Lcom/ss/android/ugc/aweme/profile/model/User;"
+                "->getRepostCount()I\n")
+        for _label, pattern, target in dexpatch.model_rules():
+            text = pattern.sub(target, text)
+        self.assertIn("ProfileTabCounts;->getFavoritingCount(Ljava/lang/Object;)I", text)
+        self.assertIn("ProfileTabCounts;->getRepostCount(Ljava/lang/Object;)I", text)
+
+    def test_profile_tab_callback_is_wrapped_for_numeric_badges(self):
+        text = ("    invoke-interface {v0, v1, v2, v3}, Lcom/ss/android/ugc/aweme/"
+                "profile/tab/profiletab/base/basebusiness/ITabBusinessListener;->Yc0("
+                "LX/C71540Oah;ILandroid/view/View;)V\n")
+        for _label, pattern, target in dexpatch.model_rules():
+            text = pattern.sub(target, text)
+        self.assertIn("ProfileTabCounts;->Yc0(Ljava/lang/Object;LX/C71540Oah;"
+                      "ILandroid/view/View;)V", text)
+
     def test_a_field_read_becomes_a_call_and_a_move(self):
         """allowDownload is a field, so one instruction has to become two."""
         text = ("    iget-object v2, v5, Lcom/ss/android/ugc/aweme/feed/model/"
