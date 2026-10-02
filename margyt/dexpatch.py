@@ -32,6 +32,7 @@ REGION = "Lcat/narezany/margyt/Region;"
 ACCENT = "Lcat/narezany/margyt/Accent;"
 DOWNLOAD = "Lcat/narezany/margyt/Download;"
 FEED = "Lcat/narezany/margyt/Feed;"
+PROFILE_TAB_COUNTS = "Lcat/narezany/margyt/ProfileTabCounts;"
 
 # TikTok's own models. Every name here is a real one, read out of the apk's
 # method and field tables rather than guessed, and each is answered by a static
@@ -85,6 +86,10 @@ MUSIC = "Lcom/ss/android/ugc/aweme/music/model/Music;"
 # the mod calls the original back by reflection rather than directly.
 WILD_SOURCES: List[Tuple[str, str, str, str]] = [
     ("setSeekBarShowType", "(I)V", "(Ljava/lang/Object;I)V", SEEKBAR),
+    # profile tab binding: preserve the app's callback, then set the native
+    # numeric label on only the likes and reposts tabs
+    ("Yc0", "(LX/C71540Oah;ILandroid/view/View;)V",
+     "(Ljava/lang/Object;LX/C71540Oah;ILandroid/view/View;)V", PROFILE_TAB_COUNTS),
 ]
 
 # A sticker touched in a conversation.
@@ -249,6 +254,10 @@ MODEL_SOURCES: List[Tuple[str, str, str, str, str]] = [
     # and becomes a picture on the way into the view that shows it
     (USER, "getNickname", "()Ljava/lang/String;",
      "(%s)Ljava/lang/String;" % USER, BADGE),
+    # the server-provided totals for liked videos and reposted videos. The
+    # wrapper returns the original value and refreshes the visible tab badge.
+    (USER, "getFavoritingCount", "()I", "(Ljava/lang/Object;)I", PROFILE_TAB_COUNTS),
+    (USER, "getRepostCount", "()I", "(Ljava/lang/Object;)I", PROFILE_TAB_COUNTS),
     # and the model a profile switches to once it has finished loading, which
     # is why a badge used to appear while the profile loaded and then go away
     (PROFILE_USER, "getNickname", "()Ljava/lang/String;",
