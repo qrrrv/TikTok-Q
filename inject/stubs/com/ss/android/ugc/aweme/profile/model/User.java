@@ -11,14 +11,6 @@ public class User {
         throw new UnsupportedOperationException("stub");
     }
 
-    public int getFavoritingCount() {
-        throw new UnsupportedOperationException("stub");
-    }
-
-    public int getRepostCount() {
-        throw new UnsupportedOperationException("stub");
-    }
-
     public com.ss.android.ugc.aweme.base.model.UrlModel getAvatarLarger() {
         throw new UnsupportedOperationException("stub");
     }
