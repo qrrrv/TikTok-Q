@@ -19,4 +19,20 @@ final class Anchors {
     /** comment sticker sheet */
     static final String COMMENT_STICKER_SHEET = "X.0HmG";
     static final String COMMENT_STICKER_SHEET_METHOD = "LJ";
+
+    /** date gate LIZ */
+    static final String DATE_GATE_LIZ = "X.0QeW";
+    static final String DATE_GATE_LIZ_METHOD = "LIZ";
+    /** date gate LIZIZ */
+    static final String DATE_GATE_LIZIZ = "X.0QeW";
+    static final String DATE_GATE_LIZIZ_METHOD = "LIZIZ";
+    /** date gate LIZJ */
+    static final String DATE_GATE_LIZJ = "X.0QeW";
+    static final String DATE_GATE_LIZJ_METHOD = "LIZJ";
+    /** date gate LIZLLL */
+    static final String DATE_GATE_LIZLLL = "X.0QeW";
+    static final String DATE_GATE_LIZLLL_METHOD = "LIZLLL";
+    /** date gate LJFF */
+    static final String DATE_GATE_LJFF = "X.0QeW";
+    static final String DATE_GATE_LJFF_METHOD = "LJFF";
 }

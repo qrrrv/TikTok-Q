@@ -173,18 +173,9 @@ final class Text {
             "Тестовая сборка", "Тестова збірка", "A test build");
 
     static final String TEST_TEXT = pick(
-            "Это тестовая сборка MargyT — она только для тех, кто поддержал "
-                    + "разработку. Настройки мода откроются на аккаунте со значком "
-                    + "поддержавшего; TikTok работает как обычно. Если значка нет, "
-                    + "поставьте обычную версию с сайта.",
-            "Це тестова збірка MargyT — вона лише для тих, хто підтримав "
-                    + "розробку. Налаштування мода відкриються на акаунті зі значком "
-                    + "того, хто підтримав; TikTok працює як завжди. Якщо значка "
-                    + "немає, встановіть звичайну версію з сайту.",
-            "This is a test build of MargyT, and it is for the people who paid "
-                    + "for the work. The mod's settings open on an account with the "
-                    + "supporter badge; TikTok itself works as usual. Without the "
-                    + "badge, install the ordinary version from the site.");
+            "Это диагностическая сборка MargyT. TikTok работает как обычно.",
+            "Це діагностична збірка MargyT. TikTok працює як завжди.",
+            "This is a diagnostic build of MargyT. TikTok itself works as usual.");
 
     static final String TEST_CLOSE = pick("Понятно", "Зрозуміло", "I see");
 
@@ -214,9 +205,9 @@ final class Text {
             "Everyone running MargyT sees it. Changing is allowed once a minute.");
 
     static final String GRADIENT_ONLY = pick(
-            "Только для поддержавших разработку",
-            "Лише для тих, хто підтримав розробку",
-            "For the people who supported the project");
+            "Функция доступна в TikTok Q",
+            "Функція доступна в TikTok Q",
+            "Available in TikTok Q");
 
     static final String GRADIENT_HUE = pick("Цвет", "Колір", "Hue");
     static final String GRADIENT_SAT = pick("Насыщенность", "Насиченість", "Saturation");

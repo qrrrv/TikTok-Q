@@ -99,10 +99,8 @@ public class SettingsActivity extends Activity {
         // the list may still be the one cached before this screen existed, so
         // redraw when the server answers rather than waiting for a tap
         Badges.tell(this::rebuild);
-        // a test build is only for the people who paid for it, and whether
-        // this account is one of them is a thing the server knows -- so the
-        // refusal waits for its answer rather than firing on a cold start,
-        // when the list of badges is simply not here yet
+        // Refresh remote badges when the account data arrives. Local settings
+        // are intentionally available regardless of supporter status.
         Mine.ask(() -> {
             rebuild();
             if (Tester.on() && !Tester.allowed()) Tester.refuse(this);
@@ -1301,11 +1299,6 @@ public class SettingsActivity extends Activity {
 
     private LinearLayout bannerCard() {
         LinearLayout card = card();
-        if (!Mine.holds(Tester.SUPPORTER)) {
-            card.addView(actionRow("wallpaper", Text.BANNER, null, () -> {}));
-            card.addView(caption(Text.GRADIENT_ONLY));
-            return card;
-        }
         card.addView(actionRow("wallpaper", Text.BANNER_PICK, null, this::pickBanner));
         if (Looks.hasBanner(Account.id())) {
             card.addView(line());
@@ -1356,11 +1349,6 @@ public class SettingsActivity extends Activity {
 
     private LinearLayout gradientCard() {
         LinearLayout card = card();
-        if (!Mine.holds(Tester.SUPPORTER)) {
-            card.addView(actionRow("gradient", Text.GRADIENT, null, () -> {}));
-            card.addView(caption(Text.GRADIENT_ONLY));
-            return card;
-        }
         if (gradientColours == null) gradientColours = Gradient.starting();
         if (gradientSlot >= gradientColours.size()) gradientSlot = 0;
 

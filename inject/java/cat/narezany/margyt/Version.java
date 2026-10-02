@@ -8,10 +8,9 @@ package cat.narezany.margyt;
  * repository to know whether there is an update; the second is there
  * so a person reporting something can say which TikTok it happened on.
  *
- * TEST marks a build made for the people who paid for the work: it
- * carries their account id faintly on screen and opens the mod's
- * settings only for them. A release build has it false and none of
- * that code ever runs.
+ * TEST marks a diagnostic build: it carries the current account id faintly on
+ * screen. Local mod settings are available in both test and release builds;
+ * server-backed claims keep their own validation.
  */
 final class Version {
 

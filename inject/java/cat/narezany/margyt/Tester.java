@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import java.util.List;
-
 /**
  * What a test build does that a release does not.
  *
@@ -46,15 +44,9 @@ public final class Tester {
 
     /** The account's own list, hidden badges included. */
     public static boolean allowed() {
-        if (!on()) return true;
-        try {
-            List<Mine.Held> held = Mine.held();
-            for (Mine.Held one : held) {
-                if (SUPPORTER.equals(one.id)) return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        return false;
+        // Local TikTok Q settings are not paywalled by the upstream test-build
+        // badge. Server-backed badge claims still validate in Mine/Proof.
+        return true;
     }
 
     /** Whether the answer is known yet, as opposed to known to be no. */

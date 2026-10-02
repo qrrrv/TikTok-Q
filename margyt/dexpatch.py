@@ -342,20 +342,16 @@ MODEL_STATICS: List[Tuple[str, str, str, str, str]] = [
 # opened from a profile. Five questions decide it -- each "is this where it was
 # opened from one of the profile ones" -- and the mod answers them.
 #
-# The class is this release's and nothing else in the apk names it, so it is
-# written here rather than found: the counters say at once if a release renames
-# it. `Dates.java` carries the same name for handing the call back.
-DATE_GATES = "LX/0QeW;"
 DATES = "Lcat/narezany/margyt/Dates;"
-
-MODEL_STATICS += [
-    (DATE_GATES, ("LIZ", "fromProfile"), "(%s)Z" % STRING, "(%s)Z" % STRING, DATES),
-    (DATE_GATES, ("LIZIZ", "fromProfileToo"), "(%s)Z" % STRING, "(%s)Z" % STRING, DATES),
-    (DATE_GATES, ("LIZJ", "fromProfileAlso"), "(%s)Z" % STRING, "(%s)Z" % STRING, DATES),
-    (DATE_GATES, ("LIZLLL", "fromProfileAsWell"), "(%s)Z" % STRING,
-     "(%s)Z" % STRING, DATES),
-    (DATE_GATES, ("LJFF", "fromProfileOrOther"), "(%s)Z" % STRING,
-     "(%s)Z" % STRING, DATES),
+# The owner is obfuscated and changes between TikTok releases. Keep the
+# method names and signatures (the stable part of this feature), discover the
+# owner during the build, and write it to Anchors.java.
+DATE_STATICS: List[Tuple[str, str, str, str, str]] = [
+    ("date gate LIZ", "LIZ", "(%s)Z" % STRING, "fromProfile", DATES),
+    ("date gate LIZIZ", "LIZIZ", "(%s)Z" % STRING, "fromProfileToo", DATES),
+    ("date gate LIZJ", "LIZJ", "(%s)Z" % STRING, "fromProfileAlso", DATES),
+    ("date gate LIZLLL", "LIZLLL", "(%s)Z" % STRING, "fromProfileAsWell", DATES),
+    ("date gate LJFF", "LJFF", "(%s)Z" % STRING, "fromProfileOrOther", DATES),
 ]
 
 # and which subscription the system calls the default, which is -1 when there
@@ -600,6 +596,17 @@ def model_rules() -> List[Tuple[str, "re.Pattern[str]", str]]:
                        % (re.escape(owner), theirs, re.escape(original))),
             r"invoke-static\1 \2, %s->%s%s" % (target, ours, replacement),
         ))
+    for label, _theirs, descriptor, ours, target in DATE_STATICS:
+        found = FOUND.get(label)
+        if found is None:
+            continue
+        owner, theirs = found
+        out.append((
+            label,
+            re.compile(r"invoke-static(/range)? (\{[^}]*\}), %s->%s%s"
+                       % (re.escape(owner), re.escape(theirs), re.escape(descriptor))),
+            r"invoke-static\1 \2, %s->%s%s" % (target, ours, descriptor),
+        ))
     for label, descriptor, ours, target in DISCOVERED_VIRTUALS:
         found = FOUND.get(label)
         if found is None:
@@ -672,6 +679,8 @@ def rewrite_models(root: str) -> Dict[str, int]:
                        + [FOUND[label][0]
                           for label, _d, _o, _t in DISCOVERED_STATICS + DISCOVERED_VIRTUALS
                           if label in FOUND]))
+    owners += tuple(set(FOUND[label][0] for label, _n, _d, _o, _t in DATE_STATICS
+                        if label in FOUND))
     for dirpath, _dirs, files in os.walk(root):
         for name in files:
             if not name.endswith(".smali"):
@@ -747,6 +756,10 @@ def touches_a_model(dex: bytes) -> bool:
         if name.encode() in dex:
             return True
     for label, _descriptor, _ours, _target in DISCOVERED_STATICS + DISCOVERED_VIRTUALS:
+        found = FOUND.get(label)
+        if found and found[0].encode() in dex and found[1].encode() in dex:
+            return True
+    for label, _expected, _descriptor, _ours, _target in DATE_STATICS:
         found = FOUND.get(label)
         if found and found[0].encode() in dex and found[1].encode() in dex:
             return True
@@ -971,6 +984,9 @@ def rewrite_targets() -> List[str]:
     for _owner, name, _original, replacement, target in MODEL_SOURCES + MODEL_STATICS:
         _theirs, ours = name if isinstance(name, tuple) else (name, name)
         out.append("%s->%s%s" % (target, ours, replacement))
+    for label, _expected, descriptor, ours, target in DATE_STATICS:
+        if label in FOUND:
+            out.append("%s->%s%s" % (target, ours, descriptor))
     for owner, _field, kind, name, target in FIELD_SOURCES:
         out.append("%s->%s(%s)%s" % (target, name, owner, kind))
     for _anchor, _owner, name, _original, replacement, target in ANCHORED_SOURCES:
@@ -1070,10 +1086,16 @@ def find_statics(dexes: Dict[str, bytes]) -> Dict[str, Tuple[str, str]]:
     wanted = {descriptor: label for label, descriptor, _ours, _target
               in DISCOVERED_STATICS + DISCOVERED_VIRTUALS}
     seen: Dict[str, set] = {label: set() for label in wanted.values()}
+    date_wanted = {(name, descriptor): label
+                   for label, name, descriptor, _ours, _target in DATE_STATICS}
+    seen.update({label: set() for label in date_wanted.values()})
 
     for dex in dexes.values():
         for owner, name, descriptor in _static_methods(dex):
             label = wanted.get(descriptor)
+            if label is not None:
+                seen[label].add((owner, name))
+            label = date_wanted.get((name, descriptor))
             if label is not None:
                 seen[label].add((owner, name))
 

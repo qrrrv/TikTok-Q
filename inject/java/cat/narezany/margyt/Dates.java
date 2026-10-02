@@ -28,9 +28,6 @@ public final class Dates {
 
     public static final String KEY = "always_date";
 
-    /** Where the questions live this release. The same name the patcher uses. */
-    private static final String GATES = "X.0QeW";
-
     private static volatile Boolean on;
 
     public static boolean isEnabled() {
@@ -120,14 +117,28 @@ public final class Dates {
             if (known.containsKey(which)) return known.get(which);
             Method theirs = null;
             try {
-                theirs = Class.forName(GATES).getDeclaredMethod(which, String.class);
+                theirs = Class.forName(owner(which)).getDeclaredMethod(method(which), String.class);
                 theirs.setAccessible(true);
             } catch (Throwable error) {
-                Diary.note("date: " + GATES + "." + which + " -- " + error);
+                Diary.note("date: " + which + " -- " + error);
             }
             known.put(which, theirs);
             return theirs;
         }
+    }
+    private static String owner(String which) {
+        if ("LIZ".equals(which)) return Anchors.DATE_GATE_LIZ;
+        if ("LIZIZ".equals(which)) return Anchors.DATE_GATE_LIZIZ;
+        if ("LIZJ".equals(which)) return Anchors.DATE_GATE_LIZJ;
+        if ("LIZLLL".equals(which)) return Anchors.DATE_GATE_LIZLLL;
+        return Anchors.DATE_GATE_LJFF;
+    }
+    private static String method(String which) {
+        if ("LIZ".equals(which)) return Anchors.DATE_GATE_LIZ_METHOD;
+        if ("LIZIZ".equals(which)) return Anchors.DATE_GATE_LIZIZ_METHOD;
+        if ("LIZJ".equals(which)) return Anchors.DATE_GATE_LIZJ_METHOD;
+        if ("LIZLLL".equals(which)) return Anchors.DATE_GATE_LIZLLL_METHOD;
+        return Anchors.DATE_GATE_LJFF_METHOD;
     }
 
     private static SharedPreferences prefs() {

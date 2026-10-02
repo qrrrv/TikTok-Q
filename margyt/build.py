@@ -346,10 +346,9 @@ class Build:
                 " * repository to know whether there is an update; the second is there\n"
                 " * so a person reporting something can say which TikTok it happened on.\n"
                 " *\n"
-                " * TEST marks a build made for the people who paid for the work: it\n"
-                " * carries their account id faintly on screen and opens the mod's\n"
-                " * settings only for them. A release build has it false and none of\n"
-                " * that code ever runs.\n"
+                " * TEST marks a diagnostic build: it carries the current account id\n"
+                " * faintly on screen. Local mod settings are available in both test\n"
+                " * and release builds; server-backed claims keep their own validation.\n"
                 " */\n"
                 "final class Version {\n\n"
                 "    private Version() {}\n\n"
@@ -596,6 +595,15 @@ class Build:
             found = dexpatch.FOUND.get(label)
             if found is None:
                 self.detail("%s: not found in this release" % label)
+                continue
+            owner, name = found
+            self.detail("%s: %s->%s" % (label, owner, name))
+            lines.append((label, owner, name))
+        for label, expected, _descriptor, _ours, _target in dexpatch.DATE_STATICS:
+            found = dexpatch.FOUND.get(label)
+            if found is None:
+                self.detail("%s: not found in this release" % label)
+                lines.append((label, "X.0QeW", expected))
                 continue
             owner, name = found
             self.detail("%s: %s->%s" % (label, owner, name))
