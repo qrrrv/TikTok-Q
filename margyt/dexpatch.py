@@ -217,7 +217,8 @@ SUBSCRIPTIONS = "Landroid/telephony/SubscriptionManager;"
 MODEL_SOURCES: List[Tuple[str, str, str, str, str]] = [
     # TikTok writes the chosen offline cache size through this method. Keep
     # the native UI and replace only the final count with the user's value.
-    (OFFLINE_MANAGER, "B83", "(I)V", "setCacheCount", OFFLINE_LIMIT),
+    (OFFLINE_MANAGER, ("B83", "setCacheCount"), "(I)V",
+     "(%sI)V" % OFFLINE_MANAGER, OFFLINE_LIMIT),
     # How many SIMs the system says are in the phone. Answering the six
     # questions about the card is not enough on a phone with no card in it:
     # the app asks how many there are first, gets nothing, and never asks the
