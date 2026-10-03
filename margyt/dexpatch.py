@@ -31,6 +31,7 @@ TELEPHONY = "Landroid/telephony/TelephonyManager;"
 REGION = "Lcat/narezany/margyt/Region;"
 ACCENT = "Lcat/narezany/margyt/Accent;"
 DOWNLOAD = "Lcat/narezany/margyt/Download;"
+OFFLINE_LIMIT = "Lcat/narezany/margyt/OfflineLimit;"
 FEED = "Lcat/narezany/margyt/Feed;"
 PROFILE_TAB_COUNTS = "Lcat/narezany/margyt/ProfileTabCounts;"
 
@@ -44,6 +45,7 @@ AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
 USER = "Lcom/ss/android/ugc/aweme/profile/model/User;"
 PROFILE_USER = "Lcom/ss/android/ugc/profile/platform/base/data/UserProfileInfo;"
 VIDEO_CONTROL = "Lcom/ss/android/ugc/aweme/feed/model/VideoControl;"
+OFFLINE_MANAGER = "Lcom/ss/android/ugc/aweme/offlinemode/viewmodel/OfflineModeManagerVM;"
 FEED_ITEM_LIST = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;"
 PHOTO_IMAGE = "Lcom/ss/android/ugc/aweme/feed/model/PhotoModeImageUrlModel;"
 ACCOUNT_SERVICE = "Lcom/ss/android/ugc/aweme/IAccountUserService;"
@@ -213,6 +215,9 @@ LIST = "Ljava/util/List;"
 SUBSCRIPTIONS = "Landroid/telephony/SubscriptionManager;"
 
 MODEL_SOURCES: List[Tuple[str, str, str, str, str]] = [
+    # TikTok writes the chosen offline cache size through this method. Keep
+    # the native UI and replace only the final count with the user's value.
+    (OFFLINE_MANAGER, "B83", "(I)V", "setCacheCount", OFFLINE_LIMIT),
     # How many SIMs the system says are in the phone. Answering the six
     # questions about the card is not enough on a phone with no card in it:
     # the app asks how many there are first, gets nothing, and never asks the

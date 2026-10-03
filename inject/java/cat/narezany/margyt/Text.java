@@ -757,6 +757,17 @@ final class Text {
     static final String DOWNLOAD_ALWAYS = pick(
             "Сохранять можно всё", "Зберігати можна все", "Save anything");
 
+    static final String OFFLINE_LIMIT = pick(
+            "Количество офлайн-видео", "Кількість офлайн-відео", "Offline video count");
+
+    static final String OFFLINE_LIMIT_NOTE = pick(
+            "Введите число видео для загрузки в офлайн. Допустимо от 1 до 10000.",
+            "Введіть кількість відео для офлайн-завантаження. Від 1 до 10000.",
+            "Enter the number of videos to cache offline. Allowed: 1 to 10000.");
+
+    static final String OFFLINE_LIMIT_BUTTON = pick(
+            "Сохранить", "Зберегти", "Save");
+
     static final String FEED = pick("Лента", "Стрічка", "Feed");
 
     static final String HIDE_ADS = pick(

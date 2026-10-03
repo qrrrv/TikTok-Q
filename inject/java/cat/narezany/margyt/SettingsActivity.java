@@ -356,6 +356,18 @@ public class SettingsActivity extends Activity {
         downloads.addView(toggleRow("download", Text.DOWNLOAD_ALWAYS, Download.isAlways(),
                 Download::setAlways));
         downloads.addView(line());
+        downloads.addView(actionRow("download", Text.OFFLINE_LIMIT,
+                Text.OFFLINE_LIMIT_NOTE + "\n\nСейчас: " + OfflineLimit.label(), () -> {
+                    Popup.write(this, Text.OFFLINE_LIMIT, OfflineLimit.label(),
+                            Text.OFFLINE_LIMIT_BUTTON, value -> {
+                                if (!OfflineLimit.setFromText(value)) {
+                                    Popup.show(this, Text.OFFLINE_LIMIT,
+                                            Text.OFFLINE_LIMIT_NOTE, Text.CLOSE);
+                                }
+                                markChanged();
+                            });
+                }));
+        downloads.addView(line());
         downloads.addView(toggleRow("place", Text.SAVE_AVATARS_ON, Avatars.isEnabled(),
                 Avatars::setEnabled));
         downloads.addView(line());
